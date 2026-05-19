@@ -35,8 +35,12 @@ def update_one(nid):
     n = find_by_id(nid)
     if not n:
         return jsonify({"error": "not found"}), 404
-    for k, v in request.json.items():
+    data = request.json
+    for k, v in data.items():
         setattr(n, k, v)
+    if "message" in data and any(c.get("type") == "sms" for c in n.targetChannels):
+        from segmenter import min_sms_segments
+        n.smsSegments = min_sms_segments(n.message)
     return jsonify(n.__dict__)
 
 
